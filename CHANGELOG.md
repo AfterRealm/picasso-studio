@@ -21,6 +21,18 @@ Categories:
 
 ---
 
+## [0.1.1] — 2026-05-10
+
+### Fixed
+
+- **Launcher distinguishes "another Picasso is running" from "some unrelated process holds this port".** `start_studio.py` previously checked port-in-use and unconditionally printed *"Picasso Studio is already running at <url>"* — so if Pi-hole / a different dev server / anything else owned 8090, the user got pointed at the wrong service. Now it hits `/health` and verifies the `{"ok": true}` shape before claiming so. On a real conflict, finds the next free port and surfaces the exact env-var override (`PICASSO_PORT=<n>`) plus a reminder to update the MCP client config. Conflict path returns exit code `2` (was silently `0`).
+
+### Notes
+
+- No changes to the running server, op surface, auth, or frontend. Pure launcher diagnostic.
+
+---
+
 ## [0.1.0] — 2026-05-10
 
 First public release. Picasso Studio ships as a self-hosted local web app
