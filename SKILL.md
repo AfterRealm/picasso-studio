@@ -1,6 +1,19 @@
 ---
 name: picasso-studio
-description: Image editor sidecar — when the user wants to modify, transform, filter, animate, or compose images, this skill exposes a full image-manipulation toolkit Claude can call directly. Results render inline in the chat by default; an optional live web canvas is available for visual tasks like interactive crop or text placement. Use this whenever the user says "edit this image," "apply [a filter / sepia / a polaroid / a watermark / etc.]," "resize / crop / rotate," "make it look [vintage / cartoon / etc.]," "animate this," or shares an image and wants any kind of manipulation done. Also use it for image creation primitives (gradients, color palettes, QR codes) and image-to-audio sonification. Don't reach for this skill for image generation from prompts (that's a different model); reach for it whenever there's an existing image and the user wants something done TO it.
+description: >
+  Image editor sidecar — when the user wants to modify, transform, filter,
+  animate, or compose images, this skill exposes a full image-manipulation
+  toolkit Claude can call directly. Results render inline in the chat by
+  default; an optional live web canvas is available for visual tasks like
+  interactive crop or text placement. Use this whenever the user says
+  "edit this image," "apply [a filter / sepia / a polaroid / a watermark /
+  etc.]," "resize / crop / rotate," "make it look [vintage / cartoon /
+  etc.]," "animate this," or shares an image and wants any kind of
+  manipulation done. Also use it for image creation primitives (gradients,
+  color palettes, QR codes) and image-to-audio sonification. Don't reach
+  for this skill for image generation from prompts (that's a different
+  model); reach for it whenever there's an existing image and the user
+  wants something done TO it.
 license: MIT
 metadata:
   author: AfterRealm
