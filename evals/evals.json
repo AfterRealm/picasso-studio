@@ -1,0 +1,23 @@
+{
+  "skill_name": "picasso-studio",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a photo at /tmp/test_input.jpg — can you make it sepia? I want to see it as we go.",
+      "expected_output": "Skill should: (1) start the studio server, (2) tell the user the URL to watch, (3) create a session from the file path, (4) call the sepia op, (5) return/note the output path. The browser should show the sepia-toned image after the op runs.",
+      "files": ["test_input.jpg"]
+    },
+    {
+      "id": 2,
+      "prompt": "this image needs to be 1080x1080 for instagram",
+      "expected_output": "Skill should start (or attach to) the server, set up a session for whatever image is in play, call resize with width=1080 height=1080, and confirm the new dimensions to the user.",
+      "files": ["test_input.jpg"]
+    },
+    {
+      "id": 3,
+      "prompt": "make this image vintage looking",
+      "expected_output": "Skill should interpret 'vintage' (sepia is the closest current op; future versions might chain sepia + vignette + grain). Should pick the right op from the catalog, explain the choice briefly, and apply it. Server URL should be surfaced so the user can watch.",
+      "files": ["test_input.jpg"]
+    }
+  ]
+}
