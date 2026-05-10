@@ -53,6 +53,35 @@ def _is_port_in_use(host: str, port: int) -> bool:
             return False
 
 
+def _is_picasso_on_port(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Hit /health and decide if the listener is Picasso (vs some other
+    service that happens to be on this port).
+
+    /health is the unauthenticated probe; we look for the exact `{"ok": true}`
+    shape Picasso returns. Anything else (different JSON, HTML, timeout,
+    connection reset) → not Picasso.
+    """
+    import json
+    from urllib.request import Request, urlopen
+    from urllib.error import URLError
+    try:
+        req = Request(f"http://{host}:{port}/health", headers={"Accept": "application/json"})
+        with urlopen(req, timeout=timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8", errors="replace"))
+            return isinstance(body, dict) and body.get("ok") is True
+    except (URLError, json.JSONDecodeError, TimeoutError, OSError, ValueError):
+        return False
+
+
+def _find_free_port(host: str, start: int, ceiling: int = 50) -> int | None:
+    """Return the lowest free port at or above `start` (within `ceiling`
+    consecutive tries), or None if none free."""
+    for candidate in range(start, start + ceiling):
+        if not _is_port_in_use(host, candidate):
+            return candidate
+    return None
+
+
 def _print_auth_banner(token: str, base_url: str) -> None:
     """Show the bearer token + handshake URL once on startup.
 
@@ -111,16 +140,38 @@ def main() -> int:
         should_open = get_mode() == "gui"
 
     if _is_port_in_use(host, port):
-        print(f"Picasso Studio is already running at {url}")
-        if should_open:
-            # Mint a fresh launch nonce so the existing server can hand the
-            # browser the token. mint_launch_nonce_for_browser is a thin
-            # helper around the auth module that requires the running app's
-            # in-memory state, which we don't have if it's another process —
-            # so just open the bare URL and let the user paste the token
-            # from ~/.picasso_studio/token.
-            webbrowser.open(url)
-        return 0
+        # Distinguish "another Picasso is already running" (idempotent
+        # success) from "some unrelated service holds this port" (real
+        # error the user has to resolve).
+        if _is_picasso_on_port(host, port):
+            print(f"Picasso Studio is already running at {url}")
+            if should_open:
+                webbrowser.open(url)
+            return 0
+
+        # Not Picasso. Find a free port and tell the user how to switch.
+        suggested = _find_free_port(host, port + 1)
+        print()
+        print("=" * 64)
+        print(f"⚠  Port {port} is in use by another process (not Picasso Studio).")
+        print(f"   /health on http://{host}:{port}/ returned an unexpected response.")
+        print()
+        if suggested is not None:
+            print(f"Next free port: {suggested}")
+            print("To use it, set PICASSO_PORT and try again:")
+            print()
+            if os.name == "nt":
+                print(f"   set PICASSO_PORT={suggested}")
+                print(f"   python scripts\\start_studio.py")
+            else:
+                print(f"   PICASSO_PORT={suggested} ./start_studio.sh")
+            print()
+            print("Then update your MCP client config to point at the new port.")
+        else:
+            print(f"Couldn't find a free port near {port}. Either stop the conflicting")
+            print(f"process or pick an explicit port:  PICASSO_PORT=<port>  and re-run.")
+        print("=" * 64)
+        return 2
 
     # Defer imports until after dep check + port check so missing-dep errors
     # are clean and we don't double-load the FastAPI app.
