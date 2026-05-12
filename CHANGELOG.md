@@ -21,6 +21,22 @@ Categories:
 
 ---
 
+## [0.1.2] — 2026-05-12
+
+### Added
+
+- **`POST /api/sessions/from-path`** — create a session from a local image path with a JSON body (`{"path": "..."}`). Same final state as the multipart upload, but skips the round-trip when the caller already has the file on the box. The MCP `create_session` tool has worked this way since v0.1.0; this brings the HTTP surface to parity so CLI tools, scripts, and HTTP-only agents don't have to roundtrip bytes they already own. Path is validated through `safe_input_path` (workspace allowlist + Pillow verify) before any bytes are persisted.
+
+### Changed
+
+- **Missing optional dependencies surface as a friendly install hint instead of `ModuleNotFoundError`.** Heavy / specialty ops (`remove_bg` / rembg, `vectorize` / vtracer, `deep_compress_png` / pngquant, etc.) lazy-import their deps inside the op body so cold-start stays light. Previously a missing module returned the bare Python exception — confusing for a user who just wanted to know what to install. `register_op`'s error wrapper now catches `ModuleNotFoundError` specifically and returns `{"error": "Op 'X' needs the optional 'Y' package... <install hint>", "missing_module": "Y", "install_hint": "pip install ..."}`. Known heavy deps have curated install hints (rembg notes the ~170 MB model download); everything else gets a generic `pip install <module>` fallback.
+
+### Notes
+
+- Live field-test today: drove a real `remove_bg` over the favicon for the Iowa Letters portfolio submission. The friction points the agent hit — `image_path` vs `image` shape mismatch on `/api/sessions`, bare `ModuleNotFoundError` on missing rembg, scrambling to find the op-listing endpoint — drove this release. `GET /api/ops` already exists (added in v0.1.0); discoverability gap rather than missing feature.
+
+---
+
 ## [0.1.1] — 2026-05-10
 
 ### Fixed

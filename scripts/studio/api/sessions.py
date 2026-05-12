@@ -9,11 +9,11 @@ from __future__ import annotations
 import asyncio
 import json
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
 from ..events import GLOBAL_HUB, HUB
-from ..paths import MAX_INPUT_BYTES, UnsafePathError, safe_ext
+from ..paths import MAX_INPUT_BYTES, UnsafePathError, safe_ext, safe_input_path
 from ..sessions import create_session, get_session, list_sessions
 
 router = APIRouter()
@@ -26,6 +26,38 @@ async def api_create_session(image: UploadFile = File(...)) -> dict:
     if len(data) > MAX_INPUT_BYTES:
         raise HTTPException(413, f"upload exceeds {MAX_INPUT_BYTES // (1024*1024)} MB cap")
     ext = safe_ext((image.filename or "upload.png").rsplit(".", 1)[-1])
+    try:
+        sess = await asyncio.to_thread(create_session, data, ext)
+    except UnsafePathError as exc:
+        raise HTTPException(415, str(exc)) from exc
+    return sess.to_dict()
+
+
+@router.post("/api/sessions/from-path")
+async def api_create_session_from_path(req: Request) -> dict:
+    """Create a session from a path already on this box.
+
+    Same final state as the multipart upload at `/api/sessions`, but skips
+    the round-trip when the caller already has the file locally (the chat
+    agent, CLI tools, scripts). The path is validated against the workspace
+    allowlist by `safe_input_path` and pillow-verified before any bytes are
+    persisted into the sessions store.
+    """
+    try:
+        body = await req.json()
+    except Exception as exc:
+        raise HTTPException(400, "JSON body required") from exc
+    raw = (body or {}).get("path")
+    if not raw or not isinstance(raw, str):
+        raise HTTPException(400, "'path' field required (absolute path to an image inside the workspace)")
+    try:
+        resolved = safe_input_path(raw)
+    except UnsafePathError as exc:
+        raise HTTPException(415, str(exc)) from exc
+    data = resolved.read_bytes()
+    if len(data) > MAX_INPUT_BYTES:
+        raise HTTPException(413, f"file exceeds {MAX_INPUT_BYTES // (1024*1024)} MB cap")
+    ext = safe_ext(resolved.suffix.lstrip(".") or "png")
     try:
         sess = await asyncio.to_thread(create_session, data, ext)
     except UnsafePathError as exc:

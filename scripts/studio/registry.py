@@ -34,6 +34,16 @@ log = logging.getLogger("picasso_studio.ops")
 # Off by default to keep error messages readable in chat.
 _DEBUG = os.environ.get("PICASSO_DEBUG", "").lower() in ("1", "true", "yes")
 
+# Specific install hints for ops that lazy-import heavy/specialty deps. Generic
+# fallback is `pip install <module>` for anything not listed here.
+_INSTALL_HINTS: dict[str, str] = {
+    "rembg": "pip install rembg onnxruntime  # ~170 MB model downloads on first use",
+    "vtracer": "pip install vtracer",
+    "pngquant": "install pngquant binary (https://pngquant.org/) and ensure it's on PATH",
+    "cairosvg": "pip install cairosvg",
+    "moviepy": "pip install moviepy",
+}
+
 
 @dataclass
 class OpDef:
@@ -77,6 +87,26 @@ def register_op(
         def safe(*args: Any, **kwargs: Any) -> dict:
             try:
                 result = func(*args, **kwargs)
+            except ModuleNotFoundError as exc:
+                # Heavy / specialty deps (rembg, vtracer, pngquant, etc.) are
+                # lazy-imported inside the op body so cold-start stays light.
+                # Surface a friendly install hint instead of the bare Python
+                # error — saves a confused user chasing a missing module.
+                log.exception("op %s missing optional dep", func.__name__)
+                missing = exc.name or "<unknown>"
+                hint = _INSTALL_HINTS.get(missing, f"pip install {missing}")
+                err = {
+                    "error": (
+                        f"Op '{func.__name__}' needs the optional '{missing}' "
+                        f"package, which isn't installed. To enable: {hint}"
+                    ),
+                    "op": func.__name__,
+                    "missing_module": missing,
+                    "install_hint": hint,
+                }
+                if _DEBUG:
+                    err["trace"] = traceback.format_exc()
+                return err
             except Exception as exc:  # noqa: BLE001
                 log.exception("op %s failed", func.__name__)
                 err: dict = {
