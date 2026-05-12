@@ -34,6 +34,7 @@ Categories:
 ### Notes
 
 - Live field-test today: drove a real `remove_bg` over the favicon for the Iowa Letters portfolio submission. The friction points the agent hit — `image_path` vs `image` shape mismatch on `/api/sessions`, bare `ModuleNotFoundError` on missing rembg, scrambling to find the op-listing endpoint — drove this release. `GET /api/ops` already exists (added in v0.1.0); discoverability gap rather than missing feature.
+- **PowerShell 7+ is the supported shell on Windows.** Windows PowerShell 5.1 (the in-box default) does not support `Invoke-RestMethod -Form`, which means multipart uploads to `POST /api/sessions` fail with a `ParameterBindingException`. PS 7+ has full `-Form` support. README now lists `winget install Microsoft.PowerShell` (or the MSI from <https://github.com/PowerShell/PowerShell/releases>) under system requirements. The new `POST /api/sessions/from-path` endpoint also lets you skip the upload entirely for files already on the box, regardless of shell — so curl, requests, or PS 5.1 with a JSON body all work cleanly.
 
 ---
 

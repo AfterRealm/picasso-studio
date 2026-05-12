@@ -19,6 +19,11 @@ image, watch Claude (Desktop or Code) edit it live in your browser.
 Cross-platform: Windows, macOS, Linux. Single Python process serving both
 the FastAPI HTTP API and the FastMCP streamable-HTTP transport.
 
+## System requirements
+
+- **Python 3.11+** (3.13 tested)
+- **PowerShell 7+ on Windows** if you plan to drive the HTTP API from PowerShell. Windows PowerShell 5.1 (the version shipped with Windows by default) does **not** have the `-Form` parameter on `Invoke-RestMethod` / `Invoke-WebRequest`, so multipart uploads (`POST /api/sessions`) won't work from 5.1 without falling back to `curl` or a hand-rolled multipart body. Install with `winget install Microsoft.PowerShell` (or grab the MSI from <https://github.com/PowerShell/PowerShell/releases>). macOS / Linux are fine — driving the API from `curl`, `httpie`, or a python `requests` script works everywhere.
+
 ## Install
 
 ```bash
@@ -29,8 +34,10 @@ pip install -r scripts/requirements.txt
 
 Optional but recommended for the heavy ops: `pip install rembg vtracer
 pngquant-cli numpy` (background removal, SVG vectorize, deep PNG
-compression, vectorized animations). All gracefully fall back to "feature
-unavailable" errors if missing.
+compression, vectorized animations). When one is missing, the op now
+returns a friendly install-hint error (e.g. *"Op 'remove_bg' needs the
+optional 'rembg' package, which isn't installed. To enable: pip install
+rembg onnxruntime"*) instead of a bare `ModuleNotFoundError`.
 
 ## Run
 
