@@ -17,9 +17,17 @@ Categories:
 
 ## [Unreleased]
 
+---
+
+## [0.1.3] — 2026-10-10
+
 ### Fixed
 
 - **Version strings synced to 0.1.2.** `scripts/studio/__init__.py` was bumped at the v0.1.2 tag, but the FastAPI app metadata (`app.py`, surfaced at `/docs` and `/openapi.json`), `SKILL.md` frontmatter, and the README Status line still read `0.1.0`. Metadata-only; no behavior change.
+
+### Notes
+
+- **README: PowerShell 7+ listed as a Windows system requirement.** Logged in the v0.1.2 section when it landed (2026-05-12), but the commit came after the v0.1.2 tag, so the README change first ships in a tagged release here. Docs-only.
 
 ---
 
