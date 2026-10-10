@@ -17,7 +17,9 @@ Categories:
 
 ## [Unreleased]
 
-(Nothing yet — collecting v0.2 work.)
+### Fixed
+
+- **Version strings synced to 0.1.2.** `scripts/studio/__init__.py` was bumped at the v0.1.2 tag, but the FastAPI app metadata (`app.py`, surfaced at `/docs` and `/openapi.json`), `SKILL.md` frontmatter, and the README Status line still read `0.1.0`. Metadata-only; no behavior change.
 
 ---
 

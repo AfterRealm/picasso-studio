@@ -191,9 +191,10 @@ connector spec — outside this repo's scope.
 
 ## Status
 
-**v0.1.0** — first release. 80 ops shipping, MCP integration verified
+**v0.1.2** — current release. 80 ops shipping, MCP integration verified
 end-to-end, full panel-roast (backend 9.7+/10) and Curb Cut (frontend
-WCAG 2.2 AA Compliant) audit passes complete.
+WCAG 2.2 AA Compliant) audit passes complete. See `CHANGELOG.md` for
+per-release detail.
 
 ## License
 
