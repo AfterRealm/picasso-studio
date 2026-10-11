@@ -19,6 +19,14 @@ Categories:
 
 ---
 
+## [0.1.4] — 2026-10-11
+
+### Added
+
+- **`LICENSE` file (MIT).** The README and `SKILL.md` frontmatter already declared MIT, but the repo had no license text, so GitHub didn't detect one. License-only change; no code or behavior changes.
+
+---
+
 ## [0.1.3] — 2026-10-10
 
 ### Fixed

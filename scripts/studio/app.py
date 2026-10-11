@@ -76,7 +76,7 @@ async def lifespan(_app: FastAPI):
     shutdown_op_executor()
 
 
-app = FastAPI(title="Picasso Studio", version="0.1.3", lifespan=lifespan)
+app = FastAPI(title="Picasso Studio", version="0.1.4", lifespan=lifespan)
 
 _BIND = get_bind()
 app.add_middleware(
